@@ -1,0 +1,34 @@
+# Python virtual environment
+backend/myenv/
+backend/venv/
+backend/env/
+backend/.venv/
+
+# Python cache
+backend/**/__pycache__/
+backend/**/*.py[cod]
+backend/**/*.so
+
+# Django
+backend/**/*.log
+backend/staticfiles/
+backend/media/
+
+# Environment variables
+backend/.env
+
+# Angular cache & build
+frontend/.angular/
+frontend/dist/
+frontend/node_modules/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Bob
+.bob/

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { CartService } from '../../services/cart.service';
 import { LoginRequest } from '../../models/user.model';
 
 @Component({
@@ -275,6 +276,7 @@ export class LoginComponent {
 
   constructor(
     private authService: AuthService,
+    private cartService: CartService,
     private router: Router
   ) {}
 
@@ -285,6 +287,7 @@ export class LoginComponent {
     this.authService.login(this.credentials).subscribe({
       next: () => {
         this.loading = false;
+        this.cartService.loadCartCount();
         this.router.navigate(['/']);
       },
       error: (err) => {
@@ -306,7 +309,17 @@ export class LoginComponent {
       },
       error: (err) => {
         this.loading = false;
-        this.errorMessage = err.error?.error || 'Registration failed. Please try again.';
+        // DRF returns field-level errors as { field: ["msg"] } or a top-level { error: "msg" }
+        if (err.error?.error) {
+          this.errorMessage = err.error.error;
+        } else if (err.error && typeof err.error === 'object') {
+          const messages = Object.entries(err.error)
+            .map(([field, msgs]) => `${field}: ${(msgs as string[]).join(', ')}`)
+            .join(' | ');
+          this.errorMessage = messages;
+        } else {
+          this.errorMessage = 'Registration failed. Please try again.';
+        }
       }
     });
   }

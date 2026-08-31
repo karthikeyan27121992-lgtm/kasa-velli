@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { User, LoginRequest, LoginResponse, RegisterRequest } from '../models/user.model';
 
@@ -61,6 +61,14 @@ export class AuthService {
 
   getRefreshToken(): string | null {
     return localStorage.getItem('refreshToken');
+  }
+
+  refreshToken(): Observable<string> {
+    const refresh = this.getRefreshToken();
+    return this.http.post<{ access: string }>(`${environment.apiUrl}/token/refresh/`, { refresh }).pipe(
+      tap(response => localStorage.setItem('accessToken', response.access)),
+      map(response => response.access)
+    );
   }
 
   getProfile(): Observable<User> {

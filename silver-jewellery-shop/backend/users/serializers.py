@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.conf import settings
 from .models import User, Order, OrderItem, Cart, Enquiry
 
 
@@ -14,19 +15,18 @@ class UserSerializer(serializers.ModelSerializer):
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Serializer for user registration"""
     password = serializers.CharField(write_only=True, min_length=6)
-    
+
     class Meta:
         model = User
         fields = ['phone_number', 'name', 'email', 'password']
-    
+
     def create(self, validated_data):
-        user = User.objects.create_user(
+        return User.objects.create_user(
             phone_number=validated_data['phone_number'],
             name=validated_data['name'],
             email=validated_data.get('email', ''),
             password=validated_data['password']
         )
-        return user
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -59,8 +59,17 @@ class CartSerializer(serializers.ModelSerializer):
     """Serializer for Cart model"""
     product_name = serializers.CharField(source='product.name', read_only=True)
     product_price = serializers.DecimalField(source='product.price', max_digits=10, decimal_places=2, read_only=True)
-    product_image = serializers.ImageField(source='product.image', read_only=True)
+    product_image = serializers.SerializerMethodField()
     discounted_price = serializers.DecimalField(source='product.discounted_price', max_digits=10, decimal_places=2, read_only=True)
+
+    def get_product_image(self, obj):
+        request = self.context.get('request')
+        if obj.product.image:
+            url = obj.product.image.url
+            if request:
+                return request.build_absolute_uri(url)
+            return f"http://localhost:8000{url}"
+        return None
     
     class Meta:
         model = Cart

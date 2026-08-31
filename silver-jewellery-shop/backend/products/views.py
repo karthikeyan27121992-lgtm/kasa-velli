@@ -23,6 +23,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.filter(is_active=True)
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
+    pagination_class = None  # Return all categories as a plain array, no pagination needed
     
     @action(detail=True, methods=['get'])
     def products(self, request, pk=None):

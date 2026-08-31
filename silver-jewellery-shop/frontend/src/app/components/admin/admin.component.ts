@@ -512,8 +512,8 @@ export class AdminComponent implements OnInit {
 
   loadCategories(): void {
     this.productService.getCategories().subscribe({
-      next: (data: any) => {
-        this.categories = Array.isArray(data) ? data : (data.results || []);
+      next: (data: Category[]) => {
+        this.categories = data;
       },
       error: (err) => console.error('Error loading categories:', err)
     });

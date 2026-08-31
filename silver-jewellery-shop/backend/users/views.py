@@ -100,6 +100,7 @@ class CartViewSet(viewsets.ModelViewSet):
     """ViewSet for Cart operations"""
     serializer_class = CartSerializer
     permission_classes = [permissions.IsAuthenticated]
+    pagination_class = None  # Return all cart items as a plain array
     
     def get_queryset(self):
         return Cart.objects.filter(user=self.request.user)

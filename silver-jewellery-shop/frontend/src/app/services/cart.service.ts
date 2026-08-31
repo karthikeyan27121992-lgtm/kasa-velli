@@ -13,10 +13,13 @@ export class CartService {
   public cartCount$ = this.cartCountSubject.asObservable();
 
   constructor(private http: HttpClient) {
-    this.loadCartCount();
+    // Only load cart count if a token is already present (page refresh while logged in)
+    if (localStorage.getItem('accessToken')) {
+      this.loadCartCount();
+    }
   }
 
-  private loadCartCount(): void {
+  loadCartCount(): void {
     this.getCartTotal().subscribe({
       next: (data) => this.cartCountSubject.next(data.items_count),
       error: () => this.cartCountSubject.next(0)
