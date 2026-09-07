@@ -1,0 +1,9 @@
+{
+  "name": "kasavelli",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build:prod",
+    "deploy": "cd frontend && npm install && npm run build:prod && npx wrangler deploy"
+  }
+}

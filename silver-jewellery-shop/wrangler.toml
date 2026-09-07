@@ -2,8 +2,8 @@ name = "kasavelli-frontend"
 compatibility_date = "2024-01-01"
 
 [assets]
-directory = "./dist/silver-jewellery-frontend"
+directory = "./frontend/dist/silver-jewellery-frontend"
 not_found_handling = "single-page-application"
 
 [build]
-command = "npm install && npm run build:prod"
+command = "npm run build"
