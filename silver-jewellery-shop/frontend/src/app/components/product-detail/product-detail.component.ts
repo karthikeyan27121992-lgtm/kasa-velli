@@ -16,9 +16,20 @@ import { Subscription } from 'rxjs';
     <div class="container" *ngIf="product">
       <div class="product-detail">
         <div class="product-images">
-          <img [src]="selectedImage" [alt]="product.name" class="main-image">
+          <ng-container *ngIf="selectedImage; else mainImgPlaceholder">
+            <img [src]="selectedImage" [alt]="product.name" class="main-image">
+          </ng-container>
+          <ng-template #mainImgPlaceholder>
+            <div class="main-img-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="64" height="64">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <polyline points="21 15 16 10 5 21"/>
+              </svg>
+            </div>
+          </ng-template>
           <div class="thumbnail-images">
-            <img [src]="product.image" (click)="selectImage(product.image)" class="thumbnail">
+            <img *ngIf="product.image" [src]="product.image" (click)="selectImage(product.image)" class="thumbnail">
             <img *ngIf="product.image_2" [src]="product.image_2" (click)="selectImage(product.image_2)" class="thumbnail">
             <img *ngIf="product.image_3" [src]="product.image_3" (click)="selectImage(product.image_3)" class="thumbnail">
           </div>
@@ -138,6 +149,12 @@ import { Subscription } from 'rxjs';
       transition: transform 0.4s ease;
     }
     .main-image:hover { transform: scale(1.02); }
+    .main-img-placeholder {
+      width: 100%; aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--cream); margin-bottom: 0.85rem;
+      color: rgba(85,23,86,0.25);
+    }
     .thumbnail-images { display: flex; gap: 0.75rem; flex-wrap: wrap; }
     .thumbnail {
       width: 78px; height: 78px;
@@ -152,7 +169,7 @@ import { Subscription } from 'rxjs';
     /* Info */
     .product-info {}
     .product-info h1 {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 2rem;
       color: var(--royal);
       margin-bottom: 0.3rem;
@@ -172,7 +189,7 @@ import { Subscription } from 'rxjs';
       padding-bottom: 1.5rem;
       border-bottom: 1px solid var(--cream-dark);
     }
-    .price { font-size: 2rem; font-weight: 700; color: var(--royal); font-family: 'Jost', sans-serif; }
+    .price { font-size: 2rem; font-weight: 700; color: var(--royal); font-family: 'Raleway', sans-serif; }
     .price-original { font-size: 1.1rem; color: var(--text-light); text-decoration: line-through; }
 
     .product-specs {
@@ -193,7 +210,7 @@ import { Subscription } from 'rxjs';
 
     .description { margin: 1.5rem 0; }
     .description h3 {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.2rem;
       color: var(--royal);
       margin-bottom: 0.5rem;
@@ -226,14 +243,14 @@ import { Subscription } from 'rxjs';
       font-size: 1.4rem;
       cursor: pointer;
       transition: opacity 0.2s;
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       line-height: 1;
     }
     .step-btn:hover { opacity: 0.82; }
     .step-qty {
       min-width: 52px;
       text-align: center;
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       font-weight: 700;
       font-size: 1.1rem;
       color: var(--royal);
@@ -248,7 +265,7 @@ import { Subscription } from 'rxjs';
       background: var(--royal);
       color: var(--cream);
       border: 2px solid var(--royal);
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       font-weight: 600;
       font-size: 0.9rem;
       letter-spacing: 1.5px;
@@ -262,7 +279,7 @@ import { Subscription } from 'rxjs';
 
     /* "View Bag" link after adding */
     .go-to-bag {
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 0.88rem;
       font-weight: 600;
       color: var(--gold);
@@ -293,7 +310,7 @@ import { Subscription } from 'rxjs';
     /* Related */
     .related-products { padding-top: 2rem; border-top: 1px solid var(--cream-dark); }
     .related-products h2 {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.6rem;
       color: var(--royal);
       margin-bottom: 1.5rem;
@@ -313,7 +330,7 @@ import { Subscription } from 'rxjs';
     .card:hover .card-img { transform: scale(1.05); }
     .card-body { padding: 1rem; }
     .card-title {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1rem;
       color: var(--royal);
       margin-bottom: 0.3rem;

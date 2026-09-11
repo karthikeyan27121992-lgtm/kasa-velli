@@ -2,10 +2,18 @@
 Django settings for jewellery_shop project.
 """
 
+import os
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
 import dj_database_url
+
+# Expose CLOUDINARY_URL to os.environ BEFORE any app is imported.
+# django-cloudinary-storage reads os.environ.get('CLOUDINARY_URL') at module
+# import time (app_settings.py line 13), so this must happen first.
+_cld_url = config('CLOUDINARY_URL', default='')
+if _cld_url:
+    os.environ.setdefault('CLOUDINARY_URL', _cld_url)
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,18 +33,21 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',          # must be before django.contrib.staticfiles
     'django.contrib.staticfiles',
-    
+    'cloudinary',
+
     # Third party apps
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
-    
+
     # Local apps
     'users',
     'products',
     'notifications',
     'payments',
+    'chat',
 ]
 
 MIDDLEWARE = [
@@ -117,9 +128,21 @@ STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-# Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Media files — use Cloudinary when CLOUDINARY_URL is set, local disk otherwise
+# Django 4.2+ uses STORAGES dict; DEFAULT_FILE_STORAGE is ignored in Django 5.x
+if _cld_url:
+    STORAGES = {
+        'default': {
+            'BACKEND': 'cloudinary_storage.storage.MediaCloudinaryStorage',
+        },
+        'staticfiles': {
+            'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
+        },
+    }
+    MEDIA_URL = '/media/'
+else:
+    MEDIA_URL = '/media/'
+    MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -169,6 +192,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "http://127.0.0.1:4200",
     "https://kasavelli-frontend.karthikeyan27121992.workers.dev",
+    "https://kasavelli925.com",
+    "https://www.kasavelli925.com",
 ]
 if _frontend_url:
     CORS_ALLOWED_ORIGINS.append(_frontend_url)
@@ -178,5 +203,11 @@ CORS_ALLOW_CREDENTIALS = True
 # Razorpay Settings
 RAZORPAY_KEY_ID = config('RAZORPAY_KEY_ID', default='')
 RAZORPAY_KEY_SECRET = config('RAZORPAY_KEY_SECRET', default='')
+
+# Gemini AI (chatbot)
+GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
+
+# CallMeBot WhatsApp notification (owner alert on new orders)
+CALLMEBOT_API_KEY = config('CALLMEBOT_API_KEY', default='')
 
 # Made with Bob

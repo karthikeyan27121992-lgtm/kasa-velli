@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart.service';
 import { PaymentService, RazorpayOrder } from '../../services/payment.service';
 import { AuthService } from '../../services/auth.service';
+import { SpinWheelService } from '../../services/spin-wheel.service';
 import { CartItem } from '../../models/product.model';
 
 @Component({
@@ -126,14 +127,21 @@ import { CartItem } from '../../models/product.model';
                 <span *ngIf="cartTotal < 999">₹99</span>
               </div>
               <div class="summary-line discount" *ngIf="hasDiscount">
-                <span>Savings</span>
+                <span>Product savings</span>
                 <span class="saving-amt">−₹{{ totalSavings }}</span>
+              </div>
+              <!-- Spin wheel discount row -->
+              <div class="summary-line spin-discount" *ngIf="spinDiscountPct > 0">
+                <span class="spin-label">
+                  <span class="spin-badge">🎰 {{ spinDiscountPct }}% Spin Offer</span>
+                </span>
+                <span class="saving-amt">−₹{{ spinDiscountAmount }}</span>
               </div>
             </div>
 
             <div class="summary-total">
               <span>Total</span>
-              <span>₹{{ cartTotal >= 999 ? cartTotal : cartTotal + 99 }}</span>
+              <span>₹{{ finalTotal }}</span>
             </div>
           </div>
 
@@ -147,18 +155,55 @@ import { CartItem } from '../../models/product.model';
               Delivery Details
             </h3>
 
+            <!-- Row 1: Door / Flat number -->
             <div class="field-group">
-              <label class="field-label">Delivery Address</label>
-              <textarea
-                class="field-input"
-                [(ngModel)]="shippingAddress"
-                rows="3"
-                placeholder="House no., Street, City, PIN"
-              ></textarea>
+              <label class="field-label">Door / Flat No. <span class="req">*</span></label>
+              <input type="text" class="field-input" [(ngModel)]="addrDoor"
+                placeholder="e.g. 4B, 12/3A" autocomplete="address-line1">
             </div>
 
+            <!-- Row 2: Area / Street -->
             <div class="field-group">
-              <label class="field-label">Mobile Number</label>
+              <label class="field-label">Area / Street <span class="req">*</span></label>
+              <input type="text" class="field-input" [(ngModel)]="addrArea"
+                placeholder="Street name, Colony" autocomplete="address-line2">
+            </div>
+
+            <!-- Row 3: Locality / Landmark -->
+            <div class="field-group">
+              <label class="field-label">Locality / Landmark</label>
+              <input type="text" class="field-input" [(ngModel)]="addrLocality"
+                placeholder="Landmark or locality">
+            </div>
+
+            <!-- Row 4: PIN + City (side by side) -->
+            <div class="field-row-2">
+              <div class="field-group">
+                <label class="field-label">PIN Code <span class="req">*</span></label>
+                <input type="text" class="field-input" [(ngModel)]="addrPin"
+                  placeholder="6-digit PIN" maxlength="6" pattern="[0-9]{6}"
+                  autocomplete="postal-code">
+              </div>
+              <div class="field-group">
+                <label class="field-label">City <span class="req">*</span></label>
+                <input type="text" class="field-input" [(ngModel)]="addrCity"
+                  placeholder="City" autocomplete="address-level2">
+              </div>
+            </div>
+
+            <!-- Row 5: State dropdown -->
+            <div class="field-group">
+              <label class="field-label">State <span class="req">*</span></label>
+              <select class="field-input field-select" [(ngModel)]="addrState"
+                autocomplete="address-level1">
+                <option value="">— Select State —</option>
+                <option *ngFor="let s of indianStates" [value]="s">{{ s }}</option>
+              </select>
+            </div>
+
+            <!-- Mobile Number -->
+            <div class="field-group">
+              <label class="field-label">Mobile Number <span class="req">*</span></label>
               <div class="phone-wrap">
                 <span class="phone-prefix">+91</span>
                 <input
@@ -176,14 +221,14 @@ import { CartItem } from '../../models/product.model';
           <button
             class="pay-btn"
             (click)="proceedToCheckout()"
-            [disabled]="processing || !shippingAddress || !phoneNumber"
+            [disabled]="processing || !isAddressComplete || !phoneNumber"
           >
             <span *ngIf="!processing">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                 <line x1="1" y1="10" x2="23" y2="10"/>
               </svg>
-              Pay ₹{{ cartTotal >= 999 ? cartTotal : cartTotal + 99 }}
+              Pay ₹{{ finalTotal }}
             </span>
             <span class="pay-loading" *ngIf="processing">
               <span class="dot"></span><span class="dot"></span><span class="dot"></span>
@@ -237,7 +282,7 @@ import { CartItem } from '../../models/product.model';
     }
     .back-btn:hover { border-color: var(--gold); background: var(--white); }
     .page-header h1 {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.8rem;
       color: var(--royal);
       margin: 0;
@@ -268,7 +313,7 @@ import { CartItem } from '../../models/product.model';
       color: var(--text-light);
     }
     .empty-state h2 {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.8rem;
       color: var(--royal);
       margin-bottom: 0.5rem;
@@ -279,7 +324,7 @@ import { CartItem } from '../../models/product.model';
       padding: 0.9rem 2.5rem;
       background: var(--royal);
       color: var(--cream);
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 0.85rem;
       font-weight: 600;
       letter-spacing: 2px;
@@ -359,7 +404,7 @@ import { CartItem } from '../../models/product.model';
       margin-bottom: 0.25rem;
     }
     .card-title {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.15rem;
       color: var(--royal);
       line-height: 1.3;
@@ -383,7 +428,7 @@ import { CartItem } from '../../models/product.model';
     .card-price-row { display: flex; align-items: center; }
     .card-prices { display: flex; align-items: baseline; gap: 0.5rem; }
     .price-main {
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.3rem;
       font-weight: 700;
       color: var(--royal);
@@ -428,14 +473,14 @@ import { CartItem } from '../../models/product.model';
     .qty-val {
       min-width: 28px;
       text-align: center;
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 0.95rem;
       font-weight: 600;
       color: var(--royal);
     }
 
     .line-total {
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.1rem;
       font-weight: 700;
       color: var(--royal);
@@ -480,7 +525,7 @@ import { CartItem } from '../../models/product.model';
       box-shadow: 0 2px 12px rgba(85,23,86,0.06);
     }
     .summary-title {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.25rem;
       color: var(--royal);
       margin-bottom: 1.25rem;
@@ -508,7 +553,14 @@ import { CartItem } from '../../models/product.model';
       letter-spacing: 0.5px;
     }
     .summary-line.discount { color: #2e7d32; }
+    .summary-line.spin-discount { color: #551756; }
     .saving-amt { font-weight: 700; }
+    .spin-badge {
+      display: inline-block;
+      background: #fdf5ff; border: 1px solid #d4a0d4;
+      color: #551756; font-size: 0.72rem; font-weight: 700;
+      padding: 0.15rem 0.5rem; border-radius: 20px;
+    }
 
     .summary-total {
       display: flex;
@@ -517,7 +569,7 @@ import { CartItem } from '../../models/product.model';
       margin-top: 1rem;
       padding-top: 1rem;
       border-top: 2px solid var(--royal);
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.4rem;
       font-weight: 700;
       color: var(--royal);
@@ -531,7 +583,7 @@ import { CartItem } from '../../models/product.model';
       box-shadow: 0 2px 12px rgba(85,23,86,0.06);
     }
     .shipping-title {
-      font-family: 'Cormorant Garamond', serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 1.1rem;
       color: var(--royal);
       margin-bottom: 1.25rem;
@@ -542,6 +594,11 @@ import { CartItem } from '../../models/product.model';
     .shipping-title svg { color: var(--gold-dark); }
 
     .field-group { margin-bottom: 1rem; }
+    .field-row-2 {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;
+    }
+    .req { color: #c0392b; font-weight: 700; }
+    .field-select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23551756' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.85rem center; padding-right: 2rem; }
     .field-label {
       display: block;
       font-size: 0.72rem;
@@ -556,7 +613,7 @@ import { CartItem } from '../../models/product.model';
       padding: 0.75rem 1rem;
       border: 1.5px solid var(--cream-dark);
       border-radius: 10px;
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       font-size: 0.95rem;
       background: var(--cream);
       color: var(--text-dark);
@@ -612,7 +669,7 @@ import { CartItem } from '../../models/product.model';
       color: var(--cream);
       border: none;
       border-radius: 14px;
-      font-family: 'Jost', sans-serif;
+      font-family: 'Raleway', sans-serif;
       font-weight: 700;
       font-size: 1rem;
       letter-spacing: 1px;
@@ -680,14 +737,49 @@ import { CartItem } from '../../models/product.model';
 export class CartComponent implements OnInit {
   cartItems: CartItem[] = [];
   cartTotal = 0;
-  shippingAddress = '';
   phoneNumber = '';
   processing = false;
+
+  // Structured address fields
+  addrDoor     = '';
+  addrArea     = '';
+  addrLocality = '';
+  addrPin      = '';
+  addrCity     = '';
+  addrState    = '';
+
+  readonly indianStates = [
+    'Andhra Pradesh','Arunachal Pradesh','Assam','Bihar','Chhattisgarh',
+    'Goa','Gujarat','Haryana','Himachal Pradesh','Jharkhand','Karnataka',
+    'Kerala','Madhya Pradesh','Maharashtra','Manipur','Meghalaya','Mizoram',
+    'Nagaland','Odisha','Punjab','Rajasthan','Sikkim','Tamil Nadu','Telangana',
+    'Tripura','Uttar Pradesh','Uttarakhand','West Bengal',
+    'Andaman & Nicobar Islands','Chandigarh','Dadra & Nagar Haveli and Daman & Diu',
+    'Delhi','Jammu & Kashmir','Ladakh','Lakshadweep','Puducherry'
+  ];
+
+  get isAddressComplete(): boolean {
+    return !!(this.addrDoor.trim() && this.addrArea.trim() &&
+              this.addrPin.trim().length === 6 && this.addrCity.trim() && this.addrState);
+  }
+
+  get shippingAddress(): string {
+    const parts = [
+      this.addrDoor.trim(),
+      this.addrArea.trim(),
+      this.addrLocality.trim(),
+      this.addrCity.trim(),
+      this.addrState,
+      `PIN: ${this.addrPin.trim()}`
+    ].filter(Boolean);
+    return parts.join(', ');
+  }
 
   constructor(
     private cartService: CartService,
     private paymentService: PaymentService,
     private authService: AuthService,
+    private spinService: SpinWheelService,
     private router: Router
   ) {}
 
@@ -719,6 +811,23 @@ export class CartComponent implements OnInit {
     }, 0);
   }
 
+  /** Spin wheel discount percentage (0 if no spin or Better Luck) */
+  get spinDiscountPct(): number {
+    return this.spinService.currentResult?.percentage ?? 0;
+  }
+
+  /** Amount deducted by spin wheel discount */
+  get spinDiscountAmount(): number {
+    if (!this.spinDiscountPct) return 0;
+    return Math.round(this.cartTotal * this.spinDiscountPct / 100);
+  }
+
+  /** Final total including shipping and spin discount */
+  get finalTotal(): number {
+    const shipping = this.cartTotal >= 999 ? 0 : 99;
+    return Math.max(0, this.cartTotal + shipping - this.spinDiscountAmount);
+  }
+
   increaseQty(item: CartItem): void {
     item.quantity++;
     this.cartService.updateCartItem(item.id, item.quantity).subscribe({
@@ -747,7 +856,8 @@ export class CartComponent implements OnInit {
     this.processing = true;
     this.paymentService.createOrder({
       shipping_address: this.shippingAddress,
-      phone_number: this.phoneNumber
+      phone_number: this.phoneNumber,
+      spin_discount_pct: this.spinDiscountPct
     }).subscribe({
       next: (razorpayOrder: RazorpayOrder) => this.initiatePayment(razorpayOrder),
       error: (err) => {
