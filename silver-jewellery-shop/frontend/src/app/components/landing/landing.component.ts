@@ -635,10 +635,10 @@ import {
       bottom: 0;
       left: 54%;
       width: 45px;
-      background: linear-gradient(to bottom, #501154, #320836);
+      background: linear-gradient(to bottom, #200422, #200422);
       transform: skewX(-14deg);
       z-index: 2;
-      opacity: 0.85;
+      opacity: 1;
     }
     .ls-gold-accent-strip {
       position: absolute;
@@ -649,7 +649,6 @@ import {
       background: linear-gradient(to bottom, var(--gold-light), var(--gold-dark));
       transform: skewX(-14deg);
       z-index: 2;
-      box-shadow: 0 0 15px rgba(245, 207, 98, 0.5);
     }
 
     /* Right Image Showcase Pane */
@@ -951,11 +950,11 @@ import {
         margin-left: -5%;
       }
       .ls-slant-divider {
-        left: 56%;
-        width: 32px;
+        left: 53%;
+        width: 36px;
       }
       .ls-gold-accent-strip {
-        left: 58%;
+        left: 60%;
         width: 4px;
       }
       .ls-brand-badge {
