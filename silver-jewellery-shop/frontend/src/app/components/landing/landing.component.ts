@@ -633,7 +633,7 @@ import {
       position: absolute;
       top: 0;
       bottom: 0;
-      left: 54%;
+      left: 46%;
       width: 45px;
       background: linear-gradient(to bottom, #200422, #200422);
       transform: skewX(-14deg);
@@ -644,7 +644,7 @@ import {
       position: absolute;
       top: 0;
       bottom: 0;
-      left: 56.5%;
+      left: 47.8%;
       width: 6px;
       background: linear-gradient(to bottom, var(--gold-light), var(--gold-dark));
       transform: skewX(-14deg);
@@ -955,6 +955,7 @@ import {
       }
       .ls-gold-accent-strip {
         left: 60%;
+        
         width: 4px;
       }
       .ls-brand-badge {
